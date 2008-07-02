@@ -5,5 +5,7 @@ atl1e (1.0.0.7-0.sidux.1) unstable; urgency=low
 
   [ Stefan Lippers-Hollmann ]
   * add myself to uploaders.
+  * bump standards version to 3.8.0 for generated module packages, no changes
+    necessary.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 02 Jul 2008 12:29:34 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 02 Jul 2008 13:01:48 +0200
