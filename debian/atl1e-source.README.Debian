@@ -1,0 +1,41 @@
+atl1e for Debian
+----------------
+
+This package provides the atl1e source code and binaries that can be used
+to build modules that work with your custom built linux kernel. The source
+files are located in /usr/src/atl1e.tar.bz2; unpacking that file in /usr/src
+will produce a build tree in /usr/src/modules/atl1e/ (The tar file can also be
+unpacked elsewhere).
+
+Building atl1e kernel modules with module-assistant
+===================================================
+
+Please install the module-assistant package and issue the following commands:-
+
+  $ m-a prepare
+  $ m-a a-i atl1e
+
+The above commands will prepare, compile, package and install a set of
+atl1e modules for your kernel.
+
+m-a is short for module-assistant, and a-i is short for auto-install. Please
+see the module-assistant documentation for further details.
+
+
+Building atl1e kernel modules (kernel-package)
+==============================================
+
+If necessary, prepare the kernel source tree for the target kernel. If you are
+using a self compiled kernel than you have an easy task!
+
+  $ cd /usr/src
+  $ tar jxvf atl1e.tar.bz2
+  $ cd linux-$KVERS
+  $ make-kpkg --added-modules atl1e modules
+
+Where $KVERS is the exact version string of the kernel you want to build
+atl1e for. A atl1e-modules package will be built against the kernel
+source version specified. Look at the output for where the atl1e-modules
+package is located. Then use dpkg to install the module package by hand, eg:-
+
+  $ dpkg -i /usr/src/atl1e-modules-$KVERS.deb

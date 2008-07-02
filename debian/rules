@@ -1,0 +1,55 @@
+#!/usr/bin/make -f
+
+# Uncomment this to turn on verbose mode.
+#export DH_VERBOSE=1
+
+include /usr/share/quilt/quilt.make
+
+build: build-stamp
+build-stamp: $(QUILT_STAMPFN)
+	dh_testdir
+	touch $@
+
+clean: unpatch
+	dh_testdir
+	dh_testroot
+	dh_clean build-stamp
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	
+	install -D -m 0755 debian/rules.modules \
+		debian/tmp/modules/atl1e/debian/rules
+	
+	for f in *.modules.in control compat copyright changelog; do \
+		install -m 0644 debian/$$f \
+			debian/tmp/modules/atl1e/debian/; \
+	done
+	
+	install -m 0644 Makefile *.[ch] debian/tmp/modules/atl1e/
+	
+	mkdir -p debian/atl1e-source/usr/src/
+	tar jcf debian/atl1e-source/usr/src/atl1e.tar.bz2 \
+		-C debian/tmp modules
+
+binary-arch:
+# We have nothing to do by default.
+
+binary-indep: build install
+	dh_testdir
+	dh_testroot
+	dh_install
+	dh_installdocs
+	dh_installchangelogs
+	dh_link
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-indep binary-arch
+.PHONY: build build-stamp clean install binary-indep binary-arch binary

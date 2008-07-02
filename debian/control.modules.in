@@ -1,0 +1,16 @@
+Source: atl1e
+Section: net
+Priority: optional
+Maintainer: Kel Modderman <kel@otaku42.de>
+Build-Depends: debhelper (>= 7), bzip2
+Standards-Version: 3.7.2
+
+Package: atl1e-modules-_KVERS_
+Architecture: any
+Depends: linux-image-_KVERS_
+Description: Driver for the Atheros L1E gigabit ethernet adapter (kernel _KVERS_)
+ This package contains the loadable kernel modules for the atl1e
+ driver for the Atheros L1E gigabit ethernet adapter.
+ .
+ The modules were compiled to be compatible with the kernel in the
+ _KVERS_ package.

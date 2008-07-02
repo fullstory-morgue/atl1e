@@ -1,0 +1,13 @@
+--- /dev/null
++++ b/Makefile
+@@ -0,0 +1,10 @@
++KSRC ?= /lib/modules/$(shell uname -r)/build
++
++obj-m	+= atl1e.o
++atl1e-y	+= atl1e_main.o atl1e_hw.o atl1e_ethtool.o atl1e_param.o
++
++all:
++	$(MAKE) -C $(KSRC) SUBDIRS=$(PWD) modules
++
++clean:
++	rm -rf *.ko *.mod.* *.o .*.o.d .*.cmd .tmp_versions Module.symvers *.order

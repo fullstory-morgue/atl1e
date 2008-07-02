@@ -1,0 +1,12 @@
+Source: atl1e
+Section: net
+Priority: optional
+Maintainer: Kel Modderman <kel@otaku42.de>
+Build-Depends: debhelper (>= 7), bzip2, quilt
+Standards-Version: 3.8.0
+
+Package: atl1e-source
+Architecture: all
+Depends: debhelper (>= 7), module-assistant, bzip2
+Description: source for the Atheros L1E gigabit ethernet adapter driver
+ atl1e is the Linux driver for the Atheros L1E gigabit ethernet adapter.

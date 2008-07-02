@@ -1,0 +1,34 @@
+#!/usr/bin/make -f
+
+# module-assistant stuff
+PACKAGE = atl1e-modules
+MA_DIR ?= /usr/share/modass
+-include $(MA_DIR)/include/generic.make
+-include $(MA_DIR)/include/common-rules.make
+
+kdist_clean: prep-deb-files
+	dh_clean
+	$(MAKE) clean
+
+kdist_config: prep-deb-files
+
+binary-modules: kdist_config
+	dh_testdir
+	dh_testroot
+	dh_clean -k
+	dh_installdirs lib/modules/$(KVERS)/misc
+
+	# build module
+	$(MAKE) -C $(CURDIR) KSRC=$(KSRC)
+	# install module
+	dh_install atl1e.ko lib/modules/$(KVERS)/misc
+
+	dh_installdocs
+	dh_installchangelogs
+	dh_installmodules
+	dh_compress
+	dh_fixperms
+	dh_installdeb
+	dh_gencontrol -- -v$(VERSION)
+	dh_md5sums
+	dh_builddeb --destdir=$(DEB_DESTDIR)
