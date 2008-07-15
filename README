@@ -1,0 +1,14 @@
+From: Jie Yang <jie.yang@atheros.com>
+
+Full patch for the Atheros L1E Gigabit Ethernet driver.
+Supportring AR8121, AR8113 and AR8114
+
+Signed-off-by: Jie Yang <jie.yang @atheros.com>
+
+update on comments:
+        1) NAPI only.
+        2) Fix memory leak when read_eeprom.
+        3) "Use tabs, not spaces, for indentation."
+        4) "Reorder code to minimize forward declarations."
+        5) "Please don't use bitfields.  Convert these to shift/mask pairs."
+        ......
