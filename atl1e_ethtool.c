@@ -18,12 +18,7 @@
  * this program; if not, write to the Free Software Foundation, Inc., 59
  * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  *
- * There are a lot of defines in here that are unused and/or have cryptic
- * names.  Please leave them alone, as they're the closest thing we have
- * to a spec from Atheros at present. *ahem* -- CHS
  */
-
-/* ethtool support for at */
 
 #include <linux/netdevice.h>
 #include <linux/ethtool.h>
@@ -72,11 +67,6 @@ static int atl1e_get_settings(struct net_device *netdev,
 static int atl1e_set_settings(struct net_device *netdev,
                              struct ethtool_cmd *ecmd)
 {
-#define MY_ADV_MASK (ADVERTISE_10_HALF  |\
-                    ADVERTISE_10_FULL  |\
-                    ADVERTISE_100_HALF |\
-                    ADVERTISE_100_FULL |\
-                    ADVERTISE_1000_FULL)
        struct atl1e_adapter *adapter = netdev_priv(netdev);
        struct atl1e_hw *hw = &adapter->hw;
 
@@ -89,7 +79,7 @@ static int atl1e_set_settings(struct net_device *netdev,
                if ((ecmd->advertising&ADVERTISE_1000_FULL)) {
                        if (hw->nic_type == athr_l1e) {
                                hw->autoneg_advertised =
-                                       ecmd->advertising & MY_ADV_MASK;
+                                       ecmd->advertising & AT_ADV_MASK;
                        } else {
                                clear_bit(__AT_RESETTING, &adapter->flags);
                                return -EINVAL;
@@ -99,7 +89,7 @@ static int atl1e_set_settings(struct net_device *netdev,
                        return -EINVAL;
                } else {
                        hw->autoneg_advertised =
-                               ecmd->advertising & MY_ADV_MASK;
+                               ecmd->advertising & AT_ADV_MASK;
                }
                ecmd->advertising = hw->autoneg_advertised |
                                    ADVERTISED_TP | ADVERTISED_Autoneg;
@@ -139,7 +129,6 @@ static int atl1e_set_settings(struct net_device *netdev,
 
        clear_bit(__AT_RESETTING, &adapter->flags);
        return 0;
-#undef MY_ADV_MASK
 }
 
 static u32 atl1e_get_tx_csum(struct net_device *netdev)
@@ -156,19 +145,17 @@ static u32 atl1e_get_msglevel(struct net_device *netdev)
 #endif
 }
 
-
 static void atl1e_set_msglevel(struct net_device *netdev, u32 data)
 {
 }
 
 static int atl1e_get_regs_len(struct net_device *netdev)
 {
-#define AT_REGS_LEN 75
        return AT_REGS_LEN * sizeof(u32);
 }
 
 static void atl1e_get_regs(struct net_device *netdev,
-               struct ethtool_regs *regs, void *p)
+                          struct ethtool_regs *regs, void *p)
 {
        struct atl1e_adapter *adapter = netdev_priv(netdev);
        struct atl1e_hw *hw = &adapter->hw;
@@ -209,58 +196,7 @@ static void atl1e_get_regs(struct net_device *netdev,
        regs_buff[27] = AT_READ_REG(hw, REG_SRAM_TXF_LEN);
        regs_buff[28] = AT_READ_REG(hw, REG_SRAM_TCPH_ADDR);
        regs_buff[29] = AT_READ_REG(hw, REG_SRAM_PKTH_ADDR);
-       /*
-       // description address
-       regs_buff[30] = AT_READ_REG(hw, REG_DESC_BASE_ADDR_HI);
-       regs_buff[31] = AT_READ_REG(hw, REG_TPD_BASE_ADDR_LO);
-       regs_buff[32] = AT_READ_REG(hw, REG_TPD_RING_SIZE);
-       regs_buff[33] = AT_READ_REG(hw, REG_HOST_RXF_HEAD);
-       regs_buff[34] = AT_READ_REG(hw, REG_HOST_RXF_TAIL);
-       regs_buff[35] = AT_READ_REG(hw, REG_HOST_RXRAM_SIZE);
-       regs_buff[36] = AT_READ_REG(hw, REG_HOST_RXF1_HEAD);
-       regs_buff[37] = AT_READ_REG(hw, REG_HOST_RXF1_TAIL);
-       regs_buff[38] = AT_READ_REG(hw, REG_HOST_RXF2_HEAD);
-       regs_buff[39] = AT_READ_REG(hw, REG_HOST_RXF2_TAIL);
-       regs_buff[40] = AT_READ_REG(hw, REG_HOST_RXF3_HEAD);
-       regs_buff[41] = AT_READ_REG(hw, REG_HOST_RXF3_TAIL);
-       // mail box
-       regs_buff[42] = AT_READ_REG(hw, REG_HOST_RXF0_WADDR);
-       regs_buff[43] = AT_READ_REG(hw, REG_HOST_RXF1_WADDR);
-       regs_buff[44] = AT_READ_REG(hw, REG_HOST_RXF2_WADDR);
-       regs_buff[45] = AT_READ_REG(hw, REG_HOST_RXF3_WADDR);
-       regs_buff[46] = AT_READ_REG(hw, REG_TPD_CONS_IDX);
-       regs_buff[47] = AT_READ_REG(hw, REG_MB_RXF0_RADDR);
-       regs_buff[48] = AT_READ_REG(hw, REG_MB_RXF1_RADDR);
-       regs_buff[49] = AT_READ_REG(hw, REG_MB_RXF2_RADDR);
-       regs_buff[50] = AT_READ_REG(hw, REG_MB_RXF3_RADDR);
-       regs_buff[51] = AT_READ_REG(hw, REG_MB_TPD_PROD_IDX);
-       // RSS
-       regs_buff[52] = AT_READ_REG(hw, REG_RSS_KEY0);
-       regs_buff[53] = AT_READ_REG(hw, REG_RSS_KEY1);
-       regs_buff[54] = AT_READ_REG(hw, REG_RSS_KEY2);
-       regs_buff[55] = AT_READ_REG(hw, REG_RSS_KEY3);
-       regs_buff[56] = AT_READ_REG(hw, REG_RSS_HASH_VALUE);
-       regs_buff[57] = AT_READ_REG(hw, REG_RSS_HASH_FLAG);
-       regs_buff[58] = AT_READ_REG(hw, REG_IDT_TABLE);
-       regs_buff[59] = AT_READ_REG(hw, REG_BASE_CPU_NUMBER);
-       // TXQ
-       regs_buff[60] = AT_READ_REG(hw, REG_TXQ_CTRL);
-       regs_buff[61] = AT_READ_REG(hw, REG_TX_JUMBO_TASK_TH);
-       // RXQ
-       regs_buff[62] = AT_READ_REG(hw, REG_RXQ_CTRL);
-       regs_buff[63] = AT_READ_REG(hw, REG_RXQ_JMBOSZ_RRDTIM);
-       regs_buff[64] = AT_READ_REG(hw, REG_RXQ_RXF_PAUSE_THRESH);
-       // DMA
-       regs_buff[65] = AT_READ_REG(hw, REG_DMA_CTRL);
-       // misc
-       regs_buff[66] = AT_READ_REG(hw, REG_SMB_STAT_TIMER);
-       regs_buff[67] = AT_READ_REGW(hw, REG_TRIG_RRD_THRESH);
-       regs_buff[68] = AT_READ_REGW(hw, REG_TRIG_TPD_THRESH);
-       regs_buff[69] = AT_READ_REGW(hw, REG_TRIG_RXTIMER);
-       regs_buff[70] = AT_READ_REGW(hw, REG_TRIG_TXTIMER);
-       regs_buff[71] = AT_READ_REG(hw, REG_ISR);
-       regs_buff[72] = AT_READ_REG(hw, REG_IMR);
-        */
+
        atl1e_read_phy_reg(hw, MII_BMCR, &phy_data);
        regs_buff[73] = (u32)phy_data;
        atl1e_read_phy_reg(hw, MII_BMSR, &phy_data);
@@ -271,8 +207,8 @@ static int atl1e_get_eeprom_len(struct net_device *netdev)
 {
        struct atl1e_adapter *adapter = netdev_priv(netdev);
 
-       if (!check_eeprom_exist(&adapter->hw))
-               return 512;
+       if (!atl1e_check_eeprom_exist(&adapter->hw))
+               return AT_EEPROM_LEN;
        else
                return 0;
 }
@@ -290,7 +226,7 @@ static int atl1e_get_eeprom(struct net_device *netdev,
        if (eeprom->len == 0)
                return -EINVAL;
 
-       if (check_eeprom_exist(hw))
+       if (atl1e_check_eeprom_exist(hw)) /* not exist */
                return -EINVAL;
 
        eeprom->magic = hw->vendor_id | (hw->device_id << 16);
@@ -304,8 +240,10 @@ static int atl1e_get_eeprom(struct net_device *netdev,
                return -ENOMEM;
 
        for (i = first_dword; i < last_dword; i++) {
-               if (!read_eeprom(hw, i * 4, &(eeprom_buff[i-first_dword])))
+               if (!atl1e_read_eeprom(hw, i * 4, &(eeprom_buff[i-first_dword]))) {
+                       kfree(eeprom_buff);
                        return -EIO;
+               }
        }
 
        memcpy(bytes, (u8 *)eeprom_buff + (eeprom->offset & 3),
@@ -316,27 +254,26 @@ static int atl1e_get_eeprom(struct net_device *netdev,
 }
 
 static int atl1e_set_eeprom(struct net_device *netdev,
-               struct ethtool_eeprom *eeprom, u8 *bytes)
+                           struct ethtool_eeprom *eeprom, u8 *bytes)
 {
        struct atl1e_adapter *adapter = netdev_priv(netdev);
        struct atl1e_hw *hw = &adapter->hw;
        u32 *eeprom_buff;
        u32 *ptr;
-       int max_len, first_dword, last_dword, ret_val = 0;
+       int first_dword, last_dword;
+       int ret_val = 0;
        int i;
 
        if (eeprom->len == 0)
                return -EOPNOTSUPP;
 
        if (eeprom->magic != (hw->vendor_id | (hw->device_id << 16)))
-               return -EFAULT;
-
-       max_len = 512;
+               return -EINVAL;
 
        first_dword = eeprom->offset >> 2;
        last_dword = (eeprom->offset + eeprom->len - 1) >> 2;
-       eeprom_buff = kmalloc(max_len, GFP_KERNEL);
-       if (!eeprom_buff)
+       eeprom_buff = kmalloc(AT_EEPROM_LEN, GFP_KERNEL);
+       if (eeprom_buff == NULL)
                return -ENOMEM;
 
        ptr = (u32 *)eeprom_buff;
@@ -344,27 +281,34 @@ static int atl1e_set_eeprom(struct net_device *netdev,
        if (eeprom->offset & 3) {
                /* need read/modify/write of first changed EEPROM word */
                /* only the second byte of the word is being modified */
-               if (!read_eeprom(hw, first_dword * 4, &(eeprom_buff[0])))
-                       return -EIO;
+               if (!atl1e_read_eeprom(hw, first_dword * 4, &(eeprom_buff[0]))) {
+                       ret_val = -EIO;
+                       goto out;
+               }
                ptr++;
        }
        if (((eeprom->offset + eeprom->len) & 3)) {
                /* need read/modify/write of last changed EEPROM word */
                /* only the first byte of the word is being modified */
 
-               if (!read_eeprom(hw, last_dword * 4,
-                               &(eeprom_buff[last_dword - first_dword])))
-                       return -EIO;
+               if (!atl1e_read_eeprom(hw, last_dword * 4,
+                               &(eeprom_buff[last_dword - first_dword]))) {
+                       ret_val = -EIO;
+                       goto out;
+               }
        }
 
        /* Device's eeprom is always little-endian, word addressable */
        memcpy(ptr, bytes, eeprom->len);
 
        for (i = 0; i < last_dword - first_dword + 1; i++) {
-               if (!write_eeprom(hw, ((first_dword + i) * 4), eeprom_buff[i]))
-                       return -EIO;
+               if (!atl1e_write_eeprom(hw, ((first_dword + i) * 4),
+                                 eeprom_buff[i])) {
+                       ret_val = -EIO;
+                       goto out;
+               }
        }
-
+out:
        kfree(eeprom_buff);
        return ret_val;
 }
@@ -389,7 +333,7 @@ static void atl1e_get_wol(struct net_device *netdev,
 {
        struct atl1e_adapter *adapter = netdev_priv(netdev);
 
-       wol->supported = WAKE_MAGIC|WAKE_PHY;
+       wol->supported = WAKE_MAGIC | WAKE_PHY;
        wol->wolopts = 0;
 
        if (adapter->wol & AT_WUFC_EX)
@@ -410,26 +354,16 @@ static int atl1e_set_wol(struct net_device *netdev, struct ethtool_wolinfo *wol)
 {
        struct atl1e_adapter *adapter = netdev_priv(netdev);
 
-       if (wol->wolopts & (WAKE_ARP | WAKE_MAGICSECURE))
+       if (wol->wolopts & (WAKE_ARP | WAKE_MAGICSECURE |
+                           WAKE_MCAST | WAKE_BCAST | WAKE_MCAST))
                return -EOPNOTSUPP;
-
-       if (wol->wolopts & (WAKE_MCAST|WAKE_BCAST|WAKE_MCAST)) {
-               AT_DBG("Interface does not support broadcast/"
-                       "multicast frame wake-up packets\n");
-               return -EOPNOTSUPP;
-       }
-
        /* these settings will always override what we currently have */
        adapter->wol = 0;
 
-       if (wol->wolopts & WAKE_MAGIC) {
+       if (wol->wolopts & WAKE_MAGIC)
                adapter->wol |= AT_WUFC_MAG;
-               DEBUGOUT("magic WOL enable");
-       }
-       if (wol->wolopts & WAKE_PHY) {
+       if (wol->wolopts & WAKE_PHY)
                adapter->wol |= AT_WUFC_LNKC;
-               DEBUGOUT("linkchg WOL enable");
-       }
 
        return 0;
 }
@@ -441,7 +375,6 @@ static int atl1e_nway_reset(struct net_device *netdev)
                atl1e_reinit_locked(adapter);
        return 0;
 }
-
 
 static struct ethtool_ops atl1e_ethtool_ops = {
        .get_settings           = atl1e_get_settings,
@@ -470,4 +403,3 @@ void atl1e_set_ethtool_ops(struct net_device *netdev)
 {
        SET_ETHTOOL_OPS(netdev, &atl1e_ethtool_ops);
 }
-

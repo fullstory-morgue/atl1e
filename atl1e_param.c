@@ -144,7 +144,7 @@ struct atl1e_option {
        } arg;
 };
 
-static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt)
+static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt, struct pci_dev *pdev)
 {
        if (*value == OPTION_UNSET) {
                *value = opt->def;
@@ -155,16 +155,16 @@ static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt)
        case enable_option:
                switch (*value) {
                case OPTION_ENABLED:
-                       printk(KERN_INFO "%s Enabled\n", opt->name);
+                       dev_info(&pdev->dev, "%s Enabled\n", opt->name);
                        return 0;
                case OPTION_DISABLED:
-                       printk(KERN_INFO "%s Disabled\n", opt->name);
+                       dev_info(&pdev->dev, "%s Disabled\n", opt->name);
                        return 0;
                }
                break;
        case range_option:
                if (*value >= opt->arg.r.min && *value <= opt->arg.r.max) {
-                       printk(KERN_INFO "%s set to %i\n", opt->name, *value);
+                       dev_info(&pdev->dev, "%s set to %i\n", opt->name, *value);
                        return 0;
                }
                break;
@@ -176,7 +176,7 @@ static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt)
                                ent = &opt->arg.l.p[i];
                                if (*value == ent->i) {
                                        if (ent->str[0] != '\0')
-                                               printk(KERN_INFO "%s\n",
+                                               dev_info(&pdev->dev, "%s\n",
                                                        ent->str);
                                        return 0;
                                }
@@ -187,7 +187,7 @@ static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt)
                BUG();
        }
 
-       printk(KERN_INFO "Invalid %s specified (%i) %s\n",
+       dev_info(&pdev->dev, "Invalid %s specified (%i) %s\n",
                        opt->name, *value, opt->err);
        *value = opt->def;
        return -1;
@@ -205,11 +205,12 @@ static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt)
 
 void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
 {
+       struct pci_dev *pdev = adapter->pdev;
        int bd = adapter->bd_number;
        if (bd >= AT_MAX_NIC) {
-               printk(KERN_NOTICE
+               dev_notice(&pdev->dev,
                        "Warning: no configuration for board #%i\n", bd);
-               printk(KERN_NOTICE "Using defaults for all values\n");
+               dev_notice(&pdev->dev, "Using defaults for all values\n");
 #ifndef module_param_array
                bd = AT_MAX_NIC;
 #endif
@@ -230,7 +231,7 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
                if (num_TxRingSz > bd) {
 #endif
                        val = TxRingSz[bd];
-                       atl1e_validate_option(&val, &opt);
+                       atl1e_validate_option(&val, &opt, pdev);
                        adapter->tx_ring.count = (u16) val & 0xFFFC;
 #ifdef module_param_array
                } else {
@@ -254,7 +255,7 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
                if (num_RxfMemSize > bd) {
 #endif
                        val = RxfMemSize[bd];
-                       atl1e_validate_option(&val, &opt);
+                       atl1e_validate_option(&val, &opt, pdev);
                        adapter->rx_ring.page_size = (u32)val * 1024;
 #ifdef module_param_array
                } else {
@@ -279,7 +280,7 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
                if (num_IntModTimer > bd) {
 #endif
                        val = IntModTimer[bd];
-                       atl1e_validate_option(&val, &opt);
+                       atl1e_validate_option(&val, &opt, pdev);
                        adapter->hw.imt = (u16) val;
 #ifdef module_param_array
                } else {
@@ -303,7 +304,7 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
                if (num_media_type > bd) {
 #endif
                        val = media_type[bd];
-                       atl1e_validate_option(&val, &opt);
+                       atl1e_validate_option(&val, &opt, pdev);
                        adapter->hw.media_type = (u16) val;
 #ifdef module_param_array
                } else {
@@ -312,6 +313,4 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
 #endif
        }
 }
-
-
 
