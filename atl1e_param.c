@@ -17,10 +17,6 @@
  * You should have received a copy of the GNU General Public License along with
  * this program; if not, write to the Free Software Foundation, Inc., 59
  * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
- *
- * There are a lot of defines in here that are unused and/or have cryptic
- * names.  Please leave them alone, as they're the closest thing we have
- * to a spec from Atheros at present. *ahem* -- CHS
  */
 
 #include <linux/netdevice.h>
@@ -31,52 +27,34 @@
  * maximum number of ports that the driver can manage.
  */
 
-#define AT_MAX_NIC 32
+#define ATL1E_MAX_NIC 32
 
 #define OPTION_UNSET    -1
 #define OPTION_DISABLED 0
 #define OPTION_ENABLED  1
 
-
-
 /* All parameters are treated the same, as an integer array of values.
  * This macro just reduces the need to repeat the same declaration code
  * over and over (plus this helps to avoid typo bugs).
  */
-#define AT_PARAM_INIT { [0 ... AT_MAX_NIC] = OPTION_UNSET }
-#ifndef module_param_array
-/* Module Parameters are always initialized to -1, so that the driver
- * can tell the difference between no user specified value or the
- * user asking for the default value.
- * The true default values are loaded in when atl1e_check_options is called.
- *
- * This is a GCC extension to ANSI C.
- * See the item "Labeled Elements in Initializers" in the section
- * "Extensions to the C Language Family" of the GCC documentation.
- */
+#define ATL1E_PARAM_INIT { [0 ... ATL1E_MAX_NIC] = OPTION_UNSET }
 
-#define AT_PARAM(X, desc) \
-       static const int __devinitdata X[AT_MAX_NIC+1] = AT_PARAM_INIT; \
-MODULE_PARM(X, "1-" __MODULE_STRING(AT_MAX_NIC) "i"); \
-MODULE_PARM_DESC(X, desc);
-#else
-#define AT_PARAM(X, desc) \
-       static int __devinitdata X[AT_MAX_NIC+1] = AT_PARAM_INIT; \
-       static int num_##X; \
-module_param_array_named(X, X, int, &num_##X, 0); \
-MODULE_PARM_DESC(X, desc);
-#endif
+#define ATL1E_PARAM(x, desc) \
+       static int __devinitdata x[ATL1E_MAX_NIC + 1] = ATL1E_PARAM_INIT; \
+       static int num_##x; \
+       module_param_array_named(x, x, int, &num_##x, 0); \
+       MODULE_PARM_DESC(x, desc);
 
-/* Transmit Memory Size
+/* Transmit Memory count
  *
  * Valid Range: 64-2048
  *
  * Default Value: 128
  */
-#define AT_MIN_TX_RING_SZ       32
-#define AT_MAX_TX_RING_SZ       1020
-#define AT_DEFAULT_TX_RING_SZ   128
-AT_PARAM(TxRingSz, "Transmit Ring Sizen");
+#define ATL1E_MIN_TX_DESC_CNT          32
+#define ATL1E_MAX_TX_DESC_CNT          1020
+#define ATL1E_DEFAULT_TX_DESC_CNT      128
+ATL1E_PARAM(tx_desc_cnt, "Transmit description count");
 
 /* Receive Memory Block Count
  *
@@ -84,10 +62,10 @@ AT_PARAM(TxRingSz, "Transmit Ring Sizen");
  *
  * Default Value: 128
  */
-#define AT_MIN_RXF_SZ        8    /* 8KB   */
-#define AT_MAX_RXF_SZ        1024 /* 1MB   */
-#define AT_DEFAULT_RXF_SZ    256  /* 128KB */
-AT_PARAM(RxfMemSize, "memory size of rx buffer(KB)");
+#define ATL1E_MIN_RX_MEM_SIZE          8    /* 8KB   */
+#define ATL1E_MAX_RX_MEM_SIZE          1024 /* 1MB   */
+#define ATL1E_DEFAULT_RX_MEM_SIZE      256  /* 128KB */
+ATL1E_PARAM(rx_mem_size, "memory size of rx buffer(KB)");
 
 /* User Specified MediaType Override
  *
@@ -100,7 +78,7 @@ AT_PARAM(RxfMemSize, "memory size of rx buffer(KB)");
  * Default Value: 0
  */
 
-AT_PARAM(media_type, "MediaType Select");
+ATL1E_PARAM(media_type, "MediaType Select");
 
 /* Interrupt Moderate Timer in units of 2 us
  *
@@ -111,21 +89,15 @@ AT_PARAM(media_type, "MediaType Select");
 #define INT_MOD_DEFAULT_CNT             100 /* 200us */
 #define INT_MOD_MAX_CNT                 65000
 #define INT_MOD_MIN_CNT                 50
-AT_PARAM(IntModTimer, "Interrupt Moderator Timer");
-
-
-
+ATL1E_PARAM(int_mod_timer, "Interrupt Moderator Timer");
 
 #define AUTONEG_ADV_DEFAULT  0x2F
 #define AUTONEG_ADV_MASK     0x2F
 #define FLOW_CONTROL_DEFAULT FLOW_CONTROL_FULL
 
-
-
 #define FLASH_VENDOR_DEFAULT    0
 #define FLASH_VENDOR_MIN        0
 #define FLASH_VENDOR_MAX        2
-
 
 struct atl1e_option {
        enum { enable_option, range_option, list_option } type;
@@ -193,7 +165,7 @@ static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt,
        return -1;
 }
 
-/**
+/*
  * atl1e_check_options - Range Checking for Command Line Parameters
  * @adapter: board private structure
  *
@@ -201,71 +173,56 @@ static int __devinit atl1e_validate_option(int *value, struct atl1e_option *opt,
  * input.  If an invalid value is given, or if no user specified
  * value exists, a default value is used.  The final value is stored
  * in a variable in the adapter structure.
- **/
-
+ */
 void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
 {
        struct pci_dev *pdev = adapter->pdev;
        int bd = adapter->bd_number;
-       if (bd >= AT_MAX_NIC) {
-               dev_notice(&pdev->dev,
-                       "Warning: no configuration for board #%i\n", bd);
+       if (bd >= ATL1E_MAX_NIC) {
+               dev_notice(&pdev->dev, "no configuration for board #%i\n", bd);
                dev_notice(&pdev->dev, "Using defaults for all values\n");
-#ifndef module_param_array
-               bd = AT_MAX_NIC;
-#endif
        }
 
-       { /* Transmit Ring Size */
+       {               /* Transmit Ring Size */
                struct atl1e_option opt = {
                        .type = range_option,
-                       .name = "Transmit Ring Size",
+                       .name = "Transmit Ddescription Count",
                        .err  = "using default of "
-                               __MODULE_STRING(AT_DEFAULT_TX_RING_SZ),
-                       .def  = AT_DEFAULT_TX_RING_SZ,
-                       .arg  = { .r = { .min = AT_MIN_TX_RING_SZ,
-                                        .max = AT_MAX_TX_RING_SZ} }
+                               __MODULE_STRING(ATL1E_DEFAULT_TX_DESC_CNT),
+                       .def  = ATL1E_DEFAULT_TX_DESC_CNT,
+                       .arg  = { .r = { .min = ATL1E_MIN_TX_DESC_CNT,
+                                        .max = ATL1E_MAX_TX_DESC_CNT} }
                };
                int val;
-#ifdef module_param_array
-               if (num_TxRingSz > bd) {
-#endif
-                       val = TxRingSz[bd];
+               if (num_tx_desc_cnt > bd) {
+                       val = tx_desc_cnt[bd];
                        atl1e_validate_option(&val, &opt, pdev);
                        adapter->tx_ring.count = (u16) val & 0xFFFC;
-#ifdef module_param_array
-               } else {
+               } else
                        adapter->tx_ring.count = (u16)opt.def;
-               }
-#endif
        }
 
-       { /* Receive Memory Block Count */
+       {               /* Receive Memory Block Count */
                struct atl1e_option opt = {
                        .type = range_option,
-                       .name = "memory size of rx buffer(KB)",
+                       .name = "Memory size of rx buffer(KB)",
                        .err  = "using default of "
-                               __MODULE_STRING(AT_DEFAULT_RXF_SZ),
-                       .def  = AT_DEFAULT_RXF_SZ,
-                       .arg  = { .r = { .min = AT_MIN_RXF_SZ,
-                                        .max = AT_MAX_RXF_SZ} }
+                               __MODULE_STRING(ATL1E_DEFAULT_RX_MEM_SIZE),
+                       .def  = ATL1E_DEFAULT_RX_MEM_SIZE,
+                       .arg  = { .r = { .min = ATL1E_MIN_RX_MEM_SIZE,
+                                        .max = ATL1E_MAX_RX_MEM_SIZE} }
                };
                int val;
-#ifdef module_param_array
-               if (num_RxfMemSize > bd) {
-#endif
-                       val = RxfMemSize[bd];
+               if (num_rx_mem_size > bd) {
+                       val = rx_mem_size[bd];
                        atl1e_validate_option(&val, &opt, pdev);
                        adapter->rx_ring.page_size = (u32)val * 1024;
-#ifdef module_param_array
                } else {
                        adapter->rx_ring.page_size = (u32)opt.def * 1024;
                }
-#endif
-
        }
 
-       { /* Interrupt Moderate Timer */
+       {               /* Interrupt Moderate Timer */
                struct atl1e_option opt = {
                        .type = range_option,
                        .name = "Interrupt Moderate Timer",
@@ -276,20 +233,15 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
                                         .max = INT_MOD_MAX_CNT} }
                } ;
                int val;
-#ifdef module_param_array
-               if (num_IntModTimer > bd) {
-#endif
-                       val = IntModTimer[bd];
+               if (num_int_mod_timer > bd) {
+                       val = int_mod_timer[bd];
                        atl1e_validate_option(&val, &opt, pdev);
                        adapter->hw.imt = (u16) val;
-#ifdef module_param_array
-               } else {
+               } else
                        adapter->hw.imt = (u16)(opt.def);
-               }
-#endif
        }
 
-       { /* MediaType */
+       {               /* MediaType */
                struct atl1e_option opt = {
                        .type = range_option,
                        .name = "Speed/Duplex Selection",
@@ -300,17 +252,12 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
                                         .max = MEDIA_TYPE_10M_HALF} }
                } ;
                int val;
-#ifdef module_param_array
                if (num_media_type > bd) {
-#endif
                        val = media_type[bd];
                        atl1e_validate_option(&val, &opt, pdev);
                        adapter->hw.media_type = (u16) val;
-#ifdef module_param_array
                } else {
                        adapter->hw.media_type = (u16)(opt.def);
                }
-#endif
        }
 }
-

@@ -1,15 +1,20 @@
-atl1e (1.0.0.7r2-0.sidux.2) UNRELEASED; urgency=low
+atl1e (1.0.0.7r3-1) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * New upstream submission.
+  * update to third submission attempt by Jie Yang <Jie.Yang@atheros.com>,
+    <72981EBCFD196144B7C6999B9FC34A9A3EE60EA59C@SHEXMB-01.global.atheros.com>
+  * internal driver revision hasn't been bumped, so add the "r3" suffix to the
+    package version.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 15 Jul 2008 15:19:22 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Wed, 16 Jul 2008 12:24:50 +0200
 
 atl1e (1.0.0.7r2-0.sidux.1) unstable; urgency=low
 
+  * New upstream submission.
   * update to second submission attempt by Jie Yang <Jie.Yang@atheros.com>,
     <72981EBCFD196144B7C6999B9FC34A9A3EE60E9F58@SHEXMB-01.global.atheros.com>
   * internal driver revision hasn't been bumped, so add the "r2" suffix to the
-    package name.
+    package version.
 
  -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 15 Jul 2008 15:10:05 +0200
 
