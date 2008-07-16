@@ -186,7 +186,7 @@ struct atl1e_tpd_desc {
        __le64 buffer_addr;
        __le32 word2;
        __le32 word3;
-} __attribute__ ((packed));
+};
 
 /* how about 0x2000 */
 #define MAX_TX_BUF_LEN      0x2000
@@ -237,37 +237,30 @@ struct atl1e_recv_ret_status {
        u16 err_flag;
        u16 hash_hi;
        u16 vtag;
-} __attribute__((packed));
+};
 
-typedef enum {
-       atl1e_10_half = 0,
-       atl1e_10_full = 1,
-       atl1e_100_half = 2,
-       atl1e_100_full = 3
-} atl1e_speed_duplex_type;
-
-typedef enum  {
+enum atl1e_dma_req_block {
        atl1e_dma_req_128 = 0,
        atl1e_dma_req_256 = 1,
        atl1e_dma_req_512 = 2,
        atl1e_dma_req_1024 = 3,
        atl1e_dma_req_2048 = 4,
        atl1e_dma_req_4096 = 5
-} atl1e_dma_req_block;
+};
 
-typedef enum {
+enum atl1e_rrs_type {
        atl1e_rrs_disable = 0,
        atl1e_rrs_ipv4 = 1,
        atl1e_rrs_ipv4_tcp = 2,
        atl1e_rrs_ipv6 = 4,
        atl1e_rrs_ipv6_tcp = 8
-} atl1e_rrs_type;
+};
 
-typedef enum {
+enum atl1e_nic_type {
        athr_l1e = 0,
        athr_l2e_revA = 1,
        athr_l2e_revB = 2
-} atl1e_nic_type;
+};
 
 struct atl1e_hw_stats {
        /* rx */
@@ -329,7 +322,7 @@ struct atl1e_hw {
        resource_size_t mem_rang;
        struct atl1e_adapter *adapter;
 
-       atl1e_nic_type  nic_type;
+       enum atl1e_nic_type  nic_type;
        u16 device_id;
        u16 vendor_id;
        u16 subsystem_id;
@@ -370,12 +363,12 @@ struct atl1e_hw {
        u16 tx_count_down;
 
        u8 tpd_burst;   /* Number of TPD to prefetch in cache-aligned burst. */
-       atl1e_rrs_type rrs_type;
+       enum atl1e_rrs_type rrs_type;
        u32 base_cpu;
        u32 indirect_tab;
 
-       atl1e_dma_req_block dmar_block;
-       atl1e_dma_req_block dmaw_block;
+       enum atl1e_dma_req_block dmar_block;
+       enum atl1e_dma_req_block dmaw_block;
        u8 dmaw_dly_cnt;
        u8 dmar_dly_cnt;
 

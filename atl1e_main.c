@@ -25,7 +25,7 @@
 
 char atl1e_driver_name[] = "ATL1E";
 char atl1e_driver_version[] = DRV_VERSION;
-
+#define PCI_DEVICE_ID_ATTANSIC_L1E      0x1026
 /*
  * atl1e_pci_tbl - PCI Device ID Table
  *
@@ -946,11 +946,11 @@ static inline void atl1e_configure_tx(struct atl1e_adapter *adapter)
        max_pay_load  = ((dev_ctrl_data >> DEVICE_CTRL_MAX_PAYLOAD_SHIFT)) &
                        DEVICE_CTRL_MAX_PAYLOAD_MASK;
 
-       hw->dmaw_block = min((atl1e_dma_req_block)max_pay_load, hw->dmaw_block);
+       hw->dmaw_block = min(max_pay_load, hw->dmaw_block);
 
        max_pay_load  = ((dev_ctrl_data >> DEVICE_CTRL_MAX_RREQ_SZ_SHIFT)) &
                        DEVICE_CTRL_MAX_RREQ_SZ_MASK;
-       hw->dmar_block = min((atl1e_dma_req_block)max_pay_load, hw->dmar_block);
+       hw->dmar_block = min(max_pay_load, hw->dmar_block);
 
        if (hw->nic_type != athr_l2e_revB)
                AT_WRITE_REGW(hw, REG_TXQ_CTRL + 2,
@@ -2371,7 +2371,6 @@ static int __devinit atl1e_probe(struct pci_dev *pdev,
 
        /* get user settings */
        atl1e_check_options(adapter);
-
        /*
         * Mark all PCI regions associated with PCI device
         * pdev as being reserved by owner atl1e_driver_name
