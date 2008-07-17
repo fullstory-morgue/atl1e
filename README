@@ -6,8 +6,4 @@ Supportring AR8121, AR8113 and AR8114
 Signed-off-by: Jie Yang <jie.yang @atheros.com>
 
 Update on comments:
-        1) Remove __attribute__(packet)  when structure has no holes
-        2) remove typedef like "typedef enum {} xx_name; "
-        3) remove "#ifdef module_param_array"
-        4) move "#define PCI_DEVICE_ID_ATTANSIC_L1E   0x1026"  from
-         include/linux/pci_ids.h to driver/net/atl1e/atl1e_main.c
+	use git-send-email to send non-mangled patches.
