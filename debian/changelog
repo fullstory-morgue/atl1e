@@ -1,8 +1,13 @@
-atl1e (1.0.0.7r4-2) UNRELEASED; urgency=low
+atl1e (1.0.0.7r5-1) unstable; urgency=low
 
-  * NOT RELEASED YET
+  * New upstream submission.
+  * update to fifths submission attempt by Jie Yang <Jie.Yang@atheros.com>,
+    <12163522333496-git-send-email-jie.yang@atheros.com>
+  * internal driver revision hasn't been bumped, so add the "r4" suffix to the
+    package version.
+  * remove not required atl1e-source.dirs, thanks to kelmo.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Thu, 17 Jul 2008 14:18:37 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 22 Jul 2008 14:19:20 +0200
 
 atl1e (1.0.0.7r4-1) unstable; urgency=low
 

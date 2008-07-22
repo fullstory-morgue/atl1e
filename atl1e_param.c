@@ -256,8 +256,8 @@ void __devinit atl1e_check_options(struct atl1e_adapter *adapter)
 			val = media_type[bd];
 			atl1e_validate_option(&val, &opt, pdev);
 			adapter->hw.media_type = (u16) val;
-		} else {
+		} else
 			adapter->hw.media_type = (u16)(opt.def);
-		}
+
 	}
 }

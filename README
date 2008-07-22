@@ -4,6 +4,7 @@ Full patch for the Atheros L1E Gigabit Ethernet driver.
 Supportring AR8121, AR8113 and AR8114
 
 Signed-off-by: Jie Yang <jie.yang @atheros.com>
-
-Update on comments:
-	use git-send-email to send non-mangled patches.
+---
+update on comments:
+	1) Remove dup MACRO already defined in linux/ethtool.h
+	2) Remove pci_using_64 logic for the reason as atl1
