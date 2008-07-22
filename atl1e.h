@@ -72,10 +72,6 @@
 #define AT_WUFC_BC   0x00000010 /* Broadcast Wakeup Enable */
 
 #define SPEED_0		   0xffff
-#define SPEED_10           10
-#define SPEED_100          100
-#define SPEED_100          100
-#define SPEED_1000         1000
 #define HALF_DUPLEX        1
 #define FULL_DUPLEX        2
 
@@ -112,8 +108,8 @@
 #define AT_HW_MAX_IDLE_DELAY 	10
 #define AT_SUSPEND_LINK_TIMEOUT 28
 
-#define AT_REGS_LEN 75
-#define AT_EEPROM_LEN 512
+#define AT_REGS_LEN	75
+#define AT_EEPROM_LEN 	512
 #define AT_ADV_MASK	(ADVERTISE_10_HALF  |\
 			 ADVERTISE_10_FULL  |\
 			 ADVERTISE_100_HALF |\
@@ -321,7 +317,6 @@ struct atl1e_hw {
 	u8 __iomem      *hw_addr;            /* inner register address */
 	resource_size_t mem_rang;
 	struct atl1e_adapter *adapter;
-
 	enum atl1e_nic_type  nic_type;
 	u16 device_id;
 	u16 vendor_id;
@@ -437,7 +432,6 @@ struct atl1e_adapter {
 	struct atl1e_hw_stats  hw_stats;
 	struct net_device_stats net_stats;
 
-	bool pci_using_64;
 	bool have_msi;
 	u32 wol;
 	u16 link_speed;
@@ -479,7 +473,6 @@ struct atl1e_adapter {
 #define AT_READ_REG(a, reg) ( \
 		readl((a)->hw_addr + reg))
 
-
 #define AT_WRITE_REGB(a, reg, value) (\
 		writeb((value), ((a)->hw_addr + reg)))
 
@@ -508,4 +501,3 @@ extern void atl1e_reinit_locked(struct atl1e_adapter *adapter);
 extern s32 atl1e_reset_hw(struct atl1e_hw *hw);
 extern void atl1e_set_ethtool_ops(struct net_device *netdev);
 #endif /* _ATL1_E_H_ */
-

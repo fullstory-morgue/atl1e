@@ -955,7 +955,6 @@ static inline void atl1e_configure_tx(struct atl1e_adapter *adapter)
 	if (hw->nic_type != athr_l2e_revB)
 		AT_WRITE_REGW(hw, REG_TXQ_CTRL + 2,
 			      atl1e_pay_load_size[hw->dmar_block]);
-
 	/* enable TXQ */
 	AT_WRITE_REGW(hw, REG_TXQ_CTRL,
 			(((u16)hw->tpd_burst & TXQ_CTRL_NUM_TPD_BURST_MASK)
@@ -1010,7 +1009,6 @@ static inline void atl1e_configure_rx(struct atl1e_adapter *adapter)
 	if (hw->rrs_type != atl1e_rrs_disable)
 		rxq_ctrl_data |=
 			(RXQ_CTRL_HASH_ENABLE | RXQ_CTRL_RSS_MODE_MQUESINT);
-
 
 	rxq_ctrl_data |= RXQ_CTRL_IPV6_XSUM_VERIFY_EN | RXQ_CTRL_PBA_ALIGN_32 |
 			 RXQ_CTRL_CUT_THRU_EN | RXQ_CTRL_EN;
@@ -1463,7 +1461,6 @@ static void atl1e_clean_rx_irq(struct atl1e_adapter *adapter, u8 que,
 			}
 
 			netdev->last_rx = jiffies;
-
 skip_pkt:
 	/* skip current packet whether it's ok or not. */
 			rx_page->read_offset +=
@@ -1493,10 +1490,10 @@ skip_pkt:
 	return;
 
 fatal_err:
-
 	if (!test_bit(__AT_DOWN, &adapter->flags))
 		schedule_work(&adapter->reset_task);
 }
+
 /*
  * atl1e_clean - NAPI Rx polling callback
  * @adapter: board private structure
@@ -1952,7 +1949,6 @@ int atl1e_up(struct atl1e_adapter *adapter)
 	int err = 0;
 	u32 val;
 
-
 	/* hardware has been reset, we need to reload some things */
 	err = atl1e_init_hw(&adapter->hw);
 	if (err) {
@@ -2305,7 +2301,6 @@ static int __devinit atl1e_probe(struct pci_dev *pdev,
 	struct net_device *netdev;
 	struct atl1e_adapter *adapter = NULL;
 	static int cards_found;
-	bool pci_using_64 = false;
 
 	int err = 0;
 
@@ -2315,13 +2310,29 @@ static int __devinit atl1e_probe(struct pci_dev *pdev,
 		return err;
 	}
 
-	pci_set_master(pdev);
+	/*
+	 * The atl1e chip can DMA to 64-bit addresses, but it uses a single
+	 * shared register for the high 32 bits, so only a single, aligned,
+	 * 4 GB physical address range can be used at a time.
+	 *
+	 * Supporting 64-bit DMA on this hardware is more trouble than it's
+	 * worth.  It is far easier to limit to 32-bit DMA than update
+	 * various kernel subsystems to support the mechanics required by a
+	 * fixed-high-32-bit system.
+	 */
+	if ((pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0) ||
+	    (pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK) != 0)) {
+		dev_err(&pdev->dev, "No usable DMA configuration,aborting\n");
+		goto err_dma;
+	}
 
 	err = pci_request_regions(pdev, atl1e_driver_name);
 	if (err) {
 		dev_err(&pdev->dev, "cannot obtain PCI resources\n");
 		goto err_pci_reg;
 	}
+
+	pci_set_master(pdev);
 
 	netdev = alloc_etherdev(sizeof(struct atl1e_adapter));
 	if (netdev == NULL) {
@@ -2335,16 +2346,8 @@ static int __devinit atl1e_probe(struct pci_dev *pdev,
 		dev_err(&pdev->dev, "init netdevice failed\n");
 		goto err_init_netdev;
 	}
-
-	if ((pci_set_dma_mask(pdev, DMA_32BIT_MASK) != 0) ||
-	    (pci_set_consistent_dma_mask(pdev, DMA_32BIT_MASK) != 0)) {
-		dev_err(&pdev->dev, "No usable DMA configuration,aborting\n");
-		goto err_dma;
-	}
-
 	adapter = netdev_priv(netdev);
 	adapter->bd_number = cards_found;
-	adapter->pci_using_64 = pci_using_64;
 	adapter->netdev = netdev;
 	adapter->pdev = pdev;
 	adapter->hw.adapter = adapter;
@@ -2384,10 +2387,6 @@ static int __devinit atl1e_probe(struct pci_dev *pdev,
 		dev_err(&pdev->dev, "net device private data init failed\n");
 		goto err_sw_init;
 	}
-
-	/* may remove */
-	if (pci_using_64)
-		netdev->features |= NETIF_F_HIGHDMA;
 
 	/* Init GPHY as early as possible due to power saving issue  */
 	spin_lock(&adapter->mdio_lock);
