@@ -1,8 +1,9 @@
-atl1e (1.0.0.7r5-2) UNRELEASED; urgency=low
+atl1e (1.0.0.7r5-2) ORPHANED; urgency=low
 
   * NOT RELEASED YET
+  * ORPHAN PACKAGE, it's merged in 2.6.27 and our 2.6.26.
 
- -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Tue, 22 Jul 2008 14:31:57 +0200
+ -- Stefan Lippers-Hollmann <s.l-h@gmx.de>  Sun, 03 Aug 2008 21:01:28 +0200
 
 atl1e (1.0.0.7r5-1) unstable; urgency=low
 
